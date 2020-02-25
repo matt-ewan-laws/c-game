@@ -1,8 +1,7 @@
-#include "window.h"
-
 #include  <ncurses.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 enum SplitType { HORIZONTAL = 0, VERTICAL = 1 };
 
@@ -118,7 +117,7 @@ int display_element(struct Element * root, int x, int y, int width, int height)
 			display_pane((struct Pane*)root->element, x, y, width, height); break;
 		case EMPTY: return 1;
 	}
-	return NULL;
+	return 1;
 }
 
 void display_split_percent(struct SplitPercent * split, int x, int y, int width, int height)
@@ -150,19 +149,6 @@ void display_split_percent(struct SplitPercent * split, int x, int y, int width,
 }
 
 /**
- *
-Window *window_create_bottom(int height, int width, int starty, int startx) {
-	WINDOW *local_win;
-
-	local_win = newwin(height, width, starty, startx);
-	box(local_win, 0 , 0);
-	wrefresh(local_win);
-
-	return local_win;
-}
-*/
-
-/**
  * +---------------------+
  * |                     |
  * |                     |
@@ -174,6 +160,60 @@ Window *window_create_bottom(int height, int width, int starty, int startx) {
  * +---------------------+
  */
 
+void add_str(char * str, struct Element * paneEl, int x, int y)
+{
+	struct Pane *pane = (struct Pane*)paneEl->element;
+	WINDOW *win = pane->win;
+	mvwaddstr(win, y, x, str);
+	wrefresh(win);
+}
+
+int get_max_of_strs(char* strs[], int start, int end)
+{
+	int cur_len, max_len = 0;
+	int i;
+	for (i = start; i < end; i++) {
+		cur_len = strlen(strs[i]);
+		if (cur_len > max_len) {
+			max_len = cur_len;
+		}
+	}
+	return max_len;
+}
+
+/**
+ * function to add a list of strings
+ */
+void add_strs(char* strs[], int num, struct Element * paneEl, int start_point, int x, int y)
+{
+	int height, width;
+	int rows_to_display;
+	int next_x;
+	int i;
+	int padding = 1;
+	int gutter = 2;
+	struct Pane *pane = (struct Pane*)paneEl->element;
+
+	// WINDOW *win = pane->win;
+	// mvprintw(2, 2, "rows_to_display", rows_to_display);
+	if (num > 0) {
+		getmaxyx(pane->win, height, width);
+		if (height - y - padding > num) {
+			rows_to_display = num;
+		} else {
+			rows_to_display = height - y - padding;
+		}
+		for (i = start_point; i < start_point + rows_to_display; i++) {
+			add_str(strs[i], paneEl, x, i-start_point+y);
+		}
+		next_x = x + get_max_of_strs(strs, start_point, start_point + rows_to_display);
+		// Good old recursive function kept things much simpler
+		add_strs(strs, num-rows_to_display, paneEl, start_point+rows_to_display, next_x + gutter, y);
+	} else {
+		return;
+	}
+}
+
 int main(void) {
 	init_windows();
 	struct Element *main_split = create_h_split_percent(70);
@@ -182,6 +222,14 @@ int main(void) {
 	add_to_split(top_pane, main_split, FIRST);
 	add_to_split(bottom_pane, main_split, SECOND);
 	display_element(main_split, 2, 2, 100, 30);
+	char *strs[4] = {
+		"hello",
+		"world",
+		"test",
+		"test"
+	};
+	add_strs(strs, 4, bottom_pane, 0, 1, 1);
+	wrefresh(stdscr);
 	getch();
 	endwin();
 }
