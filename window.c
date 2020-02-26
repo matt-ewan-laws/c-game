@@ -3,18 +3,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include  "window.h"
+
 enum SplitType { HORIZONTAL = 0, VERTICAL = 1 };
 
 enum Cardinal { NORTH = 0, SOUTH = 2, EAST = 3, WEST = 4 };
-
-enum BinaryItem { FIRST = 0, SECOND = 1 };
-
-enum ElementType { SPLIT_FIXED = 0, SPLIT_PERCENT = 1, PANE = 2, EMPTY = 3, ROOT = 4 };
-
-struct Element {
-	enum ElementType type;
-	void *element;
-};
 
 struct SplitPercent {
 	enum SplitType direction;
@@ -35,8 +28,7 @@ struct RootWindow {
 	struct Element *child;
 };
 
-struct Pane {
-	int hasBorder;
+struct Window {
 	WINDOW * win;
 };
 
@@ -85,7 +77,6 @@ void add_to_split(struct Element * el, struct Element * parent, enum BinaryItem 
 }
 
 void display_pane(struct Pane * pane, int x, int y, int width, int height);
-int display_element(struct Element * root, int x, int y, int width, int height);
 void display_split_percent(struct SplitPercent * split, int x, int y, int width, int height);
 
 
@@ -98,14 +89,16 @@ struct Element * create_pane()
 	return el;
 }
 
-
 void display_pane(struct Pane * pane, int x, int y, int width, int height)
 {
 	if (pane->win == NULL) {
-		pane->win = newwin(height, width, y, x);
+		WINDOW *win = newwin(height, width, y, x);
+		struct Window *container = malloc(sizeof(struct Window));
+		container->win = win;
+		pane->win = container;
 	}
-	box(pane->win, 0,0);
-	wrefresh(pane->win);
+	box(pane->win->win, 0,0);
+	wrefresh(pane->win->win);
 }
 
 int display_element(struct Element * root, int x, int y, int width, int height)
@@ -160,10 +153,26 @@ void display_split_percent(struct SplitPercent * split, int x, int y, int width,
  * +---------------------+
  */
 
+int get_pane_height(struct Element * paneEl)
+{
+	int height, width;
+	struct Pane *pane = (struct Pane*)paneEl->element;
+	getmaxyx(pane->win->win, height, width);
+	return height;
+}
+
+int get_pane_width(struct Element * paneEl)
+{
+	int height, width;
+	struct Pane *pane = (struct Pane*)paneEl->element;
+	getmaxyx(pane->win->win, height, width);
+	return width;
+}
+
 void add_str(char * str, struct Element * paneEl, int x, int y)
 {
 	struct Pane *pane = (struct Pane*)paneEl->element;
-	WINDOW *win = pane->win;
+	WINDOW *win = pane->win->win;
 	mvwaddstr(win, y, x, str);
 	wrefresh(win);
 }
@@ -181,55 +190,8 @@ int get_max_of_strs(char* strs[], int start, int end)
 	return max_len;
 }
 
-/**
- * function to add a list of strings
- */
-void add_strs(char* strs[], int num, struct Element * paneEl, int start_point, int x, int y)
+void pause()
 {
-	int height, width;
-	int rows_to_display;
-	int next_x;
-	int i;
-	int padding = 1;
-	int gutter = 2;
-	struct Pane *pane = (struct Pane*)paneEl->element;
-
-	// WINDOW *win = pane->win;
-	// mvprintw(2, 2, "rows_to_display", rows_to_display);
-	if (num > 0) {
-		getmaxyx(pane->win, height, width);
-		if (height - y - padding > num) {
-			rows_to_display = num;
-		} else {
-			rows_to_display = height - y - padding;
-		}
-		for (i = start_point; i < start_point + rows_to_display; i++) {
-			add_str(strs[i], paneEl, x, i-start_point+y);
-		}
-		next_x = x + get_max_of_strs(strs, start_point, start_point + rows_to_display);
-		// Good old recursive function kept things much simpler
-		add_strs(strs, num-rows_to_display, paneEl, start_point+rows_to_display, next_x + gutter, y);
-	} else {
-		return;
-	}
-}
-
-int main(void) {
-	init_windows();
-	struct Element *main_split = create_h_split_percent(70);
-	struct Element *top_pane = create_pane();
-	struct Element *bottom_pane = create_pane();
-	add_to_split(top_pane, main_split, FIRST);
-	add_to_split(bottom_pane, main_split, SECOND);
-	display_element(main_split, 2, 2, 100, 30);
-	char *strs[4] = {
-		"hello",
-		"world",
-		"test",
-		"test"
-	};
-	add_strs(strs, 4, bottom_pane, 0, 1, 1);
-	wrefresh(stdscr);
-	getch();
-	endwin();
+  getch();
+  endwin();
 }
