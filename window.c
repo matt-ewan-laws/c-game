@@ -38,13 +38,31 @@ int init_ncurses()
 	cbreak();
 	noecho();
 	curs_set(0);
+	nodelay(stdscr, TRUE);
 	refresh();
 	return 1;
+}
+
+
+int get_latest_ch()
+{
+	int ch;
+	if ((ch = getch()) == ERR) {
+		return -1;
+	}
+	else {
+		return ch;
+	}
 }
 
 void init_windows()
 {
 	init_ncurses();
+}
+
+void destroy_windows()
+{
+	endwin();
 }
 
 struct Element * create_empty_element()

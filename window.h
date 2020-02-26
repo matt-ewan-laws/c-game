@@ -8,6 +8,7 @@ struct Element {
 };
 
 void init_windows();
+void destroy_windows();
 
 struct Element * create_h_split_percent(int percent);
 struct Element * create_pane();
@@ -20,6 +21,7 @@ struct Pane {
 int get_max_of_strs(char* strs[], int start, int end);
 int get_pane_width(struct Element * paneEl);
 int get_pane_height(struct Element * paneEl);
+int get_latest_ch();
 
 void add_to_split(struct Element * el, struct Element * parent, enum BinaryItem item);
 
