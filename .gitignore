@@ -1,2 +1,4 @@
 main
+display
+*.o
 .dir-locals.el
