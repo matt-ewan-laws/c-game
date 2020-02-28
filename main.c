@@ -1,44 +1,57 @@
-
-// #include "SDL.h"
 #include  <stdio.h>
 #include  <unistd.h>
+#include  <stdlib.h>
 
-#define DELAY 30000
-#define CH_POINTER '+'
+#ifndef WINDOW_HEADER
+#define WINDOW_HEADER
+
+#include "window.h"
+
+#endif
+
+#ifndef DISPLAY_HEADER
+#define DISPLAY_HEADER
+
+#include "display.h"
+
+#endif
+
+struct Element *top_pane;
 
 void init() {
+  init_windows();
+  struct Element *main_split = create_h_split_percent(70);
+  top_pane = create_pane();
+  struct Element *bottom_pane = create_pane();
+  add_to_split(top_pane, main_split, FIRST);
+  add_to_split(bottom_pane, main_split, SECOND);
+  display_element(main_split, 2, 2, 100, 30);
+  char *strs[4] = {"hello", "world", "test", "test"};
+  add_strs(strs, 4, bottom_pane, 0, 1, 1);
 }
 
 void update() {
-}
-
-void draw(struct GameData * gameData) {
-}
-
-
-int main(int argc, char *argv[]) {
+  char *display = (char*)malloc(20 * sizeof(char));
   int ch;
-  initscr();
-  while((ch = getch()) != KEY_F(1))
-    {
-      update();
-      draw();
+  if ((ch = get_latest_ch()) != -1) {
+    sprintf(display, "You typed: %d   ", ch);
+    add_str(display, top_pane, 10, 10);
+    if (ch == 113) {
+      destroy_windows();
+      exit(0);
     }
-  endwin();
-  return 0;
+  }
 }
 
-/* int main(int argc, char *argv[]) { */
-/*   printf("Initialising SDL.\n"); */
-/*   if((SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO)==-1)) { */
-/*     printf("Could not initialize SDL: %s.\n", SDL_GetError()); */
-/*     exit(-1); */
-/*   } */
-/*   printf("SDL Initialized.\n"); */
-/*   printf("Quitting SDL. \n"); */
-/*   /\* Shutdown all subsystems *\/ */
-/*   SDL_Quit(); */
-/*   printf("Quiting... \n"); */
-/*   exit(0); */
-/* } */
+void draw() {
+}
 
+
+int main(void) {
+
+  init();
+
+  while (1) {
+    update();
+  }
+}

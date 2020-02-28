@@ -1,7 +1,11 @@
-#include <stdio.h>
-#include "window.h"
+#ifndef DISPLAY_HEADER
+#define DISPLAY_HEADER
 
+#include "display.h"
+
+#include <stdio.h>
 #include <stdlib.h>
+
 
 /**
  * function to add a list of strings
@@ -38,27 +42,4 @@ void add_strs(char *strs[], int num, struct Element *paneEl, int start_point,
   }
 }
 
-int main(void) {
-  init_windows();
-  struct Element *main_split = create_h_split_percent(70);
-  struct Element *top_pane = create_pane();
-  struct Element *bottom_pane = create_pane();
-  add_to_split(top_pane, main_split, FIRST);
-  add_to_split(bottom_pane, main_split, SECOND);
-  display_element(main_split, 2, 2, 100, 30);
-  char *strs[4] = {"hello", "world", "test", "test"};
-  add_strs(strs, 4, bottom_pane, 0, 1, 1);
-  char *display = (char*)malloc(20 * sizeof(char));
-  int ch;
-  for (;;) {
-    if ((ch = get_latest_ch()) != -1) {
-
-      sprintf(display, "You typed: %d   ", ch);
-      add_str(display, top_pane, 10, 10);
-      if (ch == 113) {
-        break;
-      }
-    }
-  }
-  destroy_windows();
-}
+#endif

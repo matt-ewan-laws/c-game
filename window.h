@@ -28,4 +28,3 @@ void add_to_split(struct Element * el, struct Element * parent, enum BinaryItem 
 void add_str(char * str, struct Element * paneEl, int x, int y);
 
 int display_element(struct Element * root, int x, int y, int width, int height);
-void pause();

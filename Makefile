@@ -4,12 +4,15 @@
 CC = gcc
 CFLAGS = -Wall
 DEPS = window.h
-OBJ = display.o window.o
+OBJ = main.o display.o window.o
 
 LDFLAGS=-lncurses
 
 %.o: %.c $(DEPS)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-display: $(OBJ)
+main: $(OBJ)
 	gcc $(CFLAGS) $(LDFLAGS) -o $@ $^
+
+clean:
+	rm $(OBJ)
